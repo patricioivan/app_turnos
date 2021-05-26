@@ -1,0 +1,14 @@
+{
+    "cuentas": {
+        "tipos": {
+            "USUARIO": "USUARIO",
+            "SOPORTE": "SOPORTE",
+            "EMPRESA": "EMPRESA",
+            "OPERARIO": "OPERARIO"
+        }
+    },
+
+    "negocios": {
+        "MAX_DISTANCE": 20000
+    }
+}

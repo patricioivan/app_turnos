@@ -1,0 +1,126 @@
+<template>
+ <div class="column q-pa-lg">
+      <div class="row">
+        <q-card square class="shadow-24" style="width:300px;height:485px;">
+          <q-card-section class="bg-deep-purple-7">
+            <h4 class="text-h5 text-white q-my-md">Turnos App</h4>
+          </q-card-section>
+          <q-card-section>
+            <q-form  @submit.prevent="handleLogin" class="q-px-sm q-pt-xl">
+
+              <q-input 
+              square 
+              clearable 
+              v-model="user.email" 
+              type="email" 
+              lazy-rules
+              :rules="[val => isValidEmail(val) || 'Escriba un email correcto']"
+              label="Email">
+                <template v-slot:prepend>
+                  <q-icon name="email" />
+                </template>
+              </q-input>
+              <q-input 
+              square 
+              clearable 
+              v-model="user.password" 
+              lazy-rules
+              :rules="[ val => val && val.length > 0 || 'Escriba su contraseña']"
+              type="password"
+              label="Password">
+                <template v-slot:prepend>
+                  <q-icon name="lock" />
+                </template>
+              </q-input>
+               <q-card-actions class="q-px-lg q-py-lg">
+                <q-btn type="submit" unelevated size="sm" color="purple-4" class="full-width text-white" label="Iniciar sesion" />
+                <q-btn type="submit" to="/registrar" unelevated size="sm" color="orange-4" class="q-ma-md full-width text-white" label="Registrarse" />
+              </q-card-actions>
+              
+            </q-form>
+            
+          </q-card-section>
+         
+        </q-card>
+      </div>
+   </div>
+
+</template>
+
+<script>
+import {mapState, mapGetters, mapActions} from 'vuex'
+export default {
+  
+  name: 'Login',
+  data() {
+    return {
+      user: {
+          email:'',
+          password:'',
+      },
+      loading: false,
+      message: ''
+    };
+  },
+  computed: {
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    },
+   
+  },
+    async created() 
+  {
+    if (!this.$store.state.auth.status.loggedIn)
+    {
+      this.$router.push("/login").catch(error => {
+        if (error.name != "NavigationDuplicated") {
+          throw error;
+        }
+       });
+    }
+  },
+  
+  methods: {
+            ...mapActions({
+      login: 'login',
+      guardarUbicacion: 'guardarUbicacion',
+    }),
+    isValidEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+         return re.test(String(email).toLowerCase());
+      },
+
+    handleLogin() {
+      this.loading = true;
+        if (this.user.email && this.user.password) {
+          this.login(this.user).then(
+            () => {            
+                navigator.geolocation.getCurrentPosition
+                  (position => {
+                    this.guardarUbicacion(position)
+                    this.$router.push('/');
+                    
+                  }, (error) => {
+                    console.log('localstorage:',localStorage.getItem('long'))
+                    if (!localStorage.getItem('long') && !localStorage.getItem('lat')) {
+                        this.$router.push("/ubicacion/cargar");
+                        
+                    }
+                  })
+            },
+            error => {
+              this.loading = false;
+              this.message =
+                (error.response && error.response.data) ||
+                error.message ||
+                error.toString();
+            }
+          );
+        }
+
+    }
+  }
+};
+</script>
+
+
